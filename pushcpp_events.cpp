@@ -50,7 +50,7 @@ void pushcpp::WS_Dispatch(const string & message)
 		m_channelData[channel].subscribed = true;
 
 		json_t *jdata = json_loadb(sdata.data(), sdata.size(), 0, &error);
-		assert(jdata); // should never fail unless pusher backend breaks
+		//assert(jdata); // should never fail unless pusher backend breaks
 
 		json_t *arr = json_object_get(json_object_get(jdata, "presence"), "ids");
 

@@ -77,15 +77,15 @@ bool pushcpp::sendSubscription(
 			ChannelAuthentication authdata =
 				chanData->second.authHandler(this->m_socketId, channel);
 
-			string chdata = authdata.channelData;
+		/*	string chdata = authdata.channelData;
 
 			if (chdata == "")
-				chdata = "{}";
+				chdata = "{}";*/
 
 			json_object_set_new(data, "auth",
 								json_string(authdata.auth.c_str()));
-			json_object_set_new(data, "channel_data",
-								json_string(chdata.c_str()));
+			/*json_object_set_new(data, "channel_data",
+								json_string(chdata.c_str()));*/
 		}
 	}
 

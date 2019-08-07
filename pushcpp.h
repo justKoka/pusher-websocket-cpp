@@ -37,7 +37,7 @@ public:
 	 */
 	struct ChannelAuthentication {
 		std::string auth;
-		std::string channelData;
+		//std::string channelData;
 	};
 
 	/**
