@@ -11,5 +11,5 @@ bool pushcpp::trigger(
 	if (myev.compare(0, 7, "client-", 0, 7))
 		myev = "client-" + myev;
 
-	send(channel, event, data);
+	return send(channel, event, data);
 }

@@ -9,7 +9,8 @@ pushcpp::pushcpp(
 	this->m_connectionEventHandler = ch;
 	this->m_errorEventHandler = eh;
 	stringstream str;
-	str << "ws://ws.pusherapp.com:80/app/";
+	str << "ws://192.168.1.168:6001/";
+	//str << "ws://ws-eu.pusher.com:80/app/";
 	str << appKey;
 	str << "?client=pushcpp&version=1.0&protocol=5";
 	m_url = str.str();
