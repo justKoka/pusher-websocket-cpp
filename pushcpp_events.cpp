@@ -22,7 +22,7 @@ void pushcpp::WS_Dispatch(const string & message)
 
 	if (event == "pusher:connection_established") {
 		json_t *jdata = json_loadb(sdata.data(), sdata.size(), 0, &error);
-		assert(jdata); // should never fail unless pusher backend breaks
+		//assert(jdata); // should never fail unless pusher backend breaks
 
 		this->m_socketId = json_string_value(json_object_get(jdata, "socket_id"));
 		DEBUG("our socket id is: %s", this->m_socketId.c_str());
@@ -67,7 +67,7 @@ void pushcpp::WS_Dispatch(const string & message)
 	// { event, channel, data:str => { user_id:str, user_info: hashornull }}
 	if (event == "pusher_internal:member_added") {
 		json_t *jdata = json_loadb(sdata.data(), sdata.size(), 0, &error);
-		assert(jdata); // should never fail unless pusher backend breaks
+		//assert(jdata); // should never fail unless pusher backend breaks
 
 		if (m_channelData.find(channel) != m_channelData.end())
 			m_channelData[channel].presenceMemberIds.insert(
@@ -82,7 +82,7 @@ void pushcpp::WS_Dispatch(const string & message)
 	// { event, channel, data:str => { user_id: str }}
 	if (event == "pusher_internal:member_removed") {
 		json_t *jdata = json_loadb(sdata.data(), sdata.size(), 0, &error);
-		assert(jdata); // should never fail unless pusher backend breaks
+		//assert(jdata); // should never fail unless pusher backend breaks
 
 		if (m_channelData.find(channel) != m_channelData.end())
 			m_channelData[channel].presenceMemberIds.erase(
