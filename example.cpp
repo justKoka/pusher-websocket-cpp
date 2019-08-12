@@ -83,7 +83,7 @@ pushcpp::ChannelAuthentication ch_auth_test(const std::string &socketId, const s
 				
 				//making post data to send via http (json including socketId and channel)
 
-				unique_ptr<char> PostData(new char[44 + socketId.length() + channel.length()]);
+				unique_ptr<char[]> PostData(new char[44 + socketId.length() + channel.length()]);
 				sprintf(PostData.get(), "{ \"socket_id\": \"%s\", \"channel_name\": \"%s\" }", socketId.c_str(), channel.c_str());
 				bool res = HttpSendRequest(hRequest, lpszHeaders, strlen(lpszHeaders), (LPVOID)PostData.get(), strlen(PostData.get()));
 
@@ -114,7 +114,7 @@ pushcpp::ChannelAuthentication ch_auth_test(const std::string &socketId, const s
 	constexpr char AUTH[] = "auth\":\"";
 	char *authStart = strstr(httpPostResponse, AUTH) + strlen(AUTH);
 	char *authEnd = strstr(authStart, "\"");
-	unique_ptr<char> authKey(new char[authEnd-authStart+1]);
+	unique_ptr<char[]> authKey(new char[authEnd-authStart+1]);
 	strncpy(authKey.get(), authStart, authEnd-authStart);
 	(authKey.get())[authEnd-authStart] = '\0';
 	pushcpp::ChannelAuthentication channelAuthentication;
