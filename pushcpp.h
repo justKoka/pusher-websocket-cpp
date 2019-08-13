@@ -53,7 +53,8 @@ public:
 	 */
 	typedef ChannelAuthentication(*ChannelAuthHandler)(
 		const std::string &socketId,
-		const std::string &channel
+		const std::string &channel,
+		const std::string &token
 	);
 
 	struct ChannelData {

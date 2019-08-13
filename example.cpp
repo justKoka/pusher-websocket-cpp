@@ -66,7 +66,7 @@ void sub_ev(
 	// cout << pp.subscriptions().size() << endl;
 }
 
-pushcpp::ChannelAuthentication ch_auth_test(const std::string &socketId, const std::string &channel)
+pushcpp::ChannelAuthentication ch_auth_test(const std::string &socketId, const std::string &channel, const std::string &token)
 {	
 	char httpPostResponse[128];
 
@@ -79,21 +79,23 @@ pushcpp::ChannelAuthentication ch_auth_test(const std::string &socketId, const s
 			LPCSTR rgpszAcceptTypes[] = { "*/*", NULL };
 			HINTERNET hRequest = HttpOpenRequest(hConnect, "POST", "broadcasting/auth", NULL, NULL, rgpszAcceptTypes, NULL, NULL);
 			if (hRequest != NULL) {
-				LPCSTR lpszHeaders = "Accept: application/json\nContent-Type: application/json\nAuthorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6IjFiNDA2ZjY0ZTMwNWM3OTI5ODJmYTgxNTk5YzZmZjlhZGI1MzkwMGYwM2EyM2FjMDE3Y2YxNGMwNGE4MzM1MTM5NDRjYTVkYmJhOWFiMTc4In0.eyJhdWQiOiIxIiwianRpIjoiMWI0MDZmNjRlMzA1Yzc5Mjk4MmZhODE1OTljNmZmOWFkYjUzOTAwZjAzYTIzYWMwMTdjZjE0YzA0YTgzMzUxMzk0NGNhNWRiYmE5YWIxNzgiLCJpYXQiOjE1NjQwNTU0MDgsIm5iZiI6MTU2NDA1NTQwOCwiZXhwIjoxNTk1Njc3ODA4LCJzdWIiOiIxIiwic2NvcGVzIjpbXX0.CTDMrSCqpEVWMCyFNBSyQbE_QSRvh8CDO0aBId11pBNWG9jozM9xCyaC3Bdb4LLp6VOVdi_8DeKx4HMcdSy6gwAV10gMfOOJOyixReSH9FOHYorJApzFcQS5xaWgFbh8v7RzxL68ImouSISkxr5yvCnixYDS9nKvG4hX1Dy7vOqJ7aFqBM7iPtfXvFO6TnSxnIMDPEYGbElaqdZ25vH5ZuWS0hpYr5hWaFcrjTZ8Um1inL_9AbJXO2RYcV-PY72VNPFAfOy1GTJvI-WQVmdiLKmd35dWvCNky5C5sw4baVwgRrWeY4Tjt8AG6SExnUj-TaeWiu7hzjxXkZzjKLc9Z9yQbtthQvgozfXjEkgc-e8sipVdhkZQC93FjLHRZIBPUKMDVX2NrmjfVBL3FJvjbW2-x6nozXvTQnT4gU1BhB_eZrQhZ4s6cS_UN-9gS3PQLwJmWjY0JlKCKNk2NY4uhWvBnhpJRb2JaLYa7Dk4sIoLwGpiTPc9kp2X4c9WgBfx0BuViL0ZXv3K37j3VQoUcU3fAAXV9RFovb8SGO6oPIuq5XZL-VUbWcDM4PajXpR0bqiaCgmmhw4c0ZR5QpHgrRMQhotpu6SaY3FmQlM2LRwtPzV0IuNxMEcoQhD_i4yEA25ZSq7a25T2jr0lukyH_S1nsVo_rsEIhdZlDlzHSEw";
+				unique_ptr<char[]> httpHeaders(new char[81+token.length()]);
+				sprintf(httpHeaders.get(), "Accept: application/json\r\nContent-Type: application/json\r\nAuthorization: Bearer %s", token.c_str());
 				
 				//making post data to send via http (json including socketId and channel)
 
 				unique_ptr<char[]> PostData(new char[44 + socketId.length() + channel.length()]);
 				sprintf(PostData.get(), "{ \"socket_id\": \"%s\", \"channel_name\": \"%s\" }", socketId.c_str(), channel.c_str());
-				bool res = HttpSendRequest(hRequest, lpszHeaders, strlen(lpszHeaders), (LPVOID)PostData.get(), strlen(PostData.get()));
-
+				//bool res = HttpSendRequest(hRequest, httpHeaders.get(), 80+token.length(), (LPVOID)PostData.get(), strlen(PostData.get()));
+				DWORD headersLength = 81 + token.length();
+				bool res = HttpSendRequest(hRequest, LPCSTR(httpHeaders.get()), strlen(httpHeaders.get()), (LPVOID)PostData.get(), strlen(PostData.get()));
 				//for debugging
 
-				/*char queryInfo[2056];
+				char queryInfo[2056];
 				DWORD queryInfoLength = strlen(queryInfo);
 				DWORD index = 0;
 				HttpQueryInfo(hRequest, HTTP_QUERY_RAW_HEADERS_CRLF, queryInfo, &queryInfoLength, &index);
-				auto prob = GetLastError();*/
+				auto prob = GetLastError();
 
 				//reading response
 
