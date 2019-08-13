@@ -62,6 +62,7 @@ public:
 		ChannelAuthHandler authHandler;
 		std::set<ChannelEventHandler> eventHandlers;
 		std::set<std::string> presenceMemberIds;
+		std::string token;
 
 		void clear()
 		{
@@ -129,7 +130,8 @@ public:
 		 * This is called for authentication requests as described
 		 * above. presence- and private- channels require this.
 		 */
-		ChannelAuthHandler auth = NULL
+		ChannelAuthHandler auth,
+		const std::string &token
 	);
 
 	/**
