@@ -1,7 +1,7 @@
 #include "pushcpp_internal.h"
 
 pushcpp::pushcpp(
-	const string &appKey,
+	const string &wsUrl,
 	ConnectionEventHandler ch,
 	ErrorEventHandler eh
 )
@@ -9,9 +9,8 @@ pushcpp::pushcpp(
 	this->m_connectionEventHandler = ch;
 	this->m_errorEventHandler = eh;
 	stringstream str;
-	str << "ws://192.168.1.168:6001/";
-	//str << "ws://ws-eu.pusher.com:80/app/";
-	str << appKey;
+	str << "ws://";
+	str << wsUrl;
 	str << "?client=pushcpp&version=1.0&protocol=5";
 	m_url = str.str();
 }

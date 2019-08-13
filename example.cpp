@@ -8,7 +8,7 @@ using namespace std;
 void cn_ev(const pushcpp::ConnectionEvent ev);
 void er_ev(const int code, const std::string &msg);
 
-pushcpp pp("app/key", cn_ev, er_ev);
+pushcpp pp("192.168.1.168:6001/app/key", cn_ev, er_ev);
 
 void cn_ev(const pushcpp::ConnectionEvent ev)
 {

@@ -76,7 +76,7 @@ public:
 	 * This does not connect yet.
 	 */
 	pushcpp(
-		const std::string &appKey,
+		const std::string &wsUrl,
 		ConnectionEventHandler ch = NULL,
 		ErrorEventHandler eh = NULL
 	);
