@@ -54,6 +54,10 @@ public:
 	typedef ChannelAuthentication(*ChannelAuthHandler)(
 		const std::string &socketId,
 		const std::string &channel,
+		const std::string &userAgent,
+		const std::string &hostAuthEndpoint,
+		const unsigned int &portAuthEndpoint,
+		const std::string &pathAuthEndpoint,
 		const std::string &token
 	);
 
@@ -63,6 +67,10 @@ public:
 		std::set<ChannelEventHandler> eventHandlers;
 		std::set<std::string> presenceMemberIds;
 		std::string token;
+		std::string hostAuthEndpoint;
+		unsigned int portAuthEndpoint;
+		std::string pathAuthEndpoint;
+
 
 		void clear()
 		{
@@ -77,6 +85,7 @@ public:
 	 */
 	pushcpp(
 		const std::string &wsUrl,
+		const std::string &userAgent,
 		ConnectionEventHandler ch = NULL,
 		ErrorEventHandler eh = NULL
 	);
@@ -131,6 +140,9 @@ public:
 		 * above. presence- and private- channels require this.
 		 */
 		ChannelAuthHandler auth,
+		const std::string &hostAuthEndpoint,
+		const unsigned int &portAuthEndpoint,
+		const std::string &pathAuthEndpoint,
 		const std::string &token
 	);
 
@@ -222,4 +234,5 @@ private:
 	// The complete list of channels we (want to) subscribe to.
 	// This includes channels we were rejected from.
 	std::unordered_map<std::string, ChannelData> m_channelData;
+	std::string m_userAgent;
 };

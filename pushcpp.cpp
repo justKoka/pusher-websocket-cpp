@@ -2,12 +2,14 @@
 
 pushcpp::pushcpp(
 	const string &wsUrl,
+	const string &userAgent,
 	ConnectionEventHandler ch,
 	ErrorEventHandler eh
 )
 {
 	this->m_connectionEventHandler = ch;
 	this->m_errorEventHandler = eh;
+	this->m_userAgent = userAgent;
 	stringstream str;
 	str << "ws://";
 	str << wsUrl;

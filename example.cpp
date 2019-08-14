@@ -8,7 +8,7 @@ using namespace std;
 void cn_ev(const pushcpp::ConnectionEvent ev);
 void er_ev(const int code, const std::string &msg);
 
-pushcpp pp("192.168.1.168:6001/app/key", cn_ev, er_ev);
+pushcpp pp("192.168.1.168:6001/app/key", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36", cn_ev, er_ev);
 
 void cn_ev(const pushcpp::ConnectionEvent ev)
 {
@@ -20,64 +20,27 @@ void er_ev(const int code, const std::string &msg)
 	cout << "Error from pusher: " << code << " "  << msg << endl;
 }
 
-void sub_ev(
+void event_handler(
 	const string &channel,
 	const string &event,
 	const string &data
 )
 {
-	// cout << pp.subscriptions().size() << endl;
-
-	printf("Received event %s on channel %s: %s\n",
-		   event.c_str(), channel.c_str(), data.c_str());
-
-	auto cd = pp.subscriptions();
-
-	cout << "Subs: " << endl;
-	for (
-		auto it = cd.begin();
-		it != cd.end();
-		it++
-	) {
-		cout << "Subscription: " << it->first <<
-			 " status: " << it->second.subscribed <<
-			 " members: " << it->second.presenceMemberIds.size() <<
-			 endl;
-	}
-
-	// for (auto it = ChannelData
-
-	//pp.unsubscribe(channel);
-
-	cd = pp.subscriptions();
-
-	cout << "Subs: " << endl;
-	for (
-		auto it = cd.begin();
-		it != cd.end();
-		it++
-	) {
-		cout << "Subscription: " << it->first <<
-			 " status: " << it->second.subscribed <<
-			 " members: " << it->second.presenceMemberIds.size() <<
-			 endl;
-	}
-
-	// cout << pp.subscriptions().size() << endl;
+	cout << "event: " << event << endl << "on channel: " << channel << endl << "with data: " << data << endl;
 }
 
-pushcpp::ChannelAuthentication ch_auth_test(const std::string &socketId, const std::string &channel, const std::string &token)
+pushcpp::ChannelAuthentication auth_handler(const std::string &socketId, const std::string &channel, const std::string &userAgent, const std::string &hostAuthEndpoint, const unsigned int &portAuthEndpoint, const std::string &pathAuthEndpoint, const std::string &token)
 {	
 	char httpPostResponse[128];
 
 	//setup connection, make request
 
-	HINTERNET hInternet = InternetOpen("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36",INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, NULL);
+	HINTERNET hInternet = InternetOpen(userAgent.c_str(),INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, NULL);
 	if (hInternet != NULL) {
-		HINTERNET hConnect = InternetConnect(hInternet, "192.168.1.168", 81, NULL, NULL, INTERNET_SERVICE_HTTP, NULL, NULL);
+		HINTERNET hConnect = InternetConnect(hInternet, hostAuthEndpoint.c_str(), portAuthEndpoint, NULL, NULL, INTERNET_SERVICE_HTTP, NULL, NULL);
 		if (hConnect != NULL) {
 			LPCSTR rgpszAcceptTypes[] = { "*/*", NULL };
-			HINTERNET hRequest = HttpOpenRequest(hConnect, "POST", "broadcasting/auth", NULL, NULL, rgpszAcceptTypes, NULL, NULL);
+			HINTERNET hRequest = HttpOpenRequest(hConnect, "POST", pathAuthEndpoint.c_str(), NULL, NULL, rgpszAcceptTypes, NULL, NULL);
 			if (hRequest != NULL) {
 				unique_ptr<char[]> httpHeaders(new char[81+token.length()]);
 				sprintf(httpHeaders.get(), "Accept: application/json\r\nContent-Type: application/json\r\nAuthorization: Bearer %s", token.c_str());
@@ -132,7 +95,7 @@ int WINAPI WinMain
 	WSADATA wsadata;
 	WSAStartup(MAKEWORD(1,1),&wsadata);
 	pp.connect();
-	pp.subscribe("private-user.1", sub_ev, ch_auth_test, "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6IjFiNDA2ZjY0ZTMwNWM3OTI5ODJmYTgxNTk5YzZmZjlhZGI1MzkwMGYwM2EyM2FjMDE3Y2YxNGMwNGE4MzM1MTM5NDRjYTVkYmJhOWFiMTc4In0.eyJhdWQiOiIxIiwianRpIjoiMWI0MDZmNjRlMzA1Yzc5Mjk4MmZhODE1OTljNmZmOWFkYjUzOTAwZjAzYTIzYWMwMTdjZjE0YzA0YTgzMzUxMzk0NGNhNWRiYmE5YWIxNzgiLCJpYXQiOjE1NjQwNTU0MDgsIm5iZiI6MTU2NDA1NTQwOCwiZXhwIjoxNTk1Njc3ODA4LCJzdWIiOiIxIiwic2NvcGVzIjpbXX0.CTDMrSCqpEVWMCyFNBSyQbE_QSRvh8CDO0aBId11pBNWG9jozM9xCyaC3Bdb4LLp6VOVdi_8DeKx4HMcdSy6gwAV10gMfOOJOyixReSH9FOHYorJApzFcQS5xaWgFbh8v7RzxL68ImouSISkxr5yvCnixYDS9nKvG4hX1Dy7vOqJ7aFqBM7iPtfXvFO6TnSxnIMDPEYGbElaqdZ25vH5ZuWS0hpYr5hWaFcrjTZ8Um1inL_9AbJXO2RYcV-PY72VNPFAfOy1GTJvI-WQVmdiLKmd35dWvCNky5C5sw4baVwgRrWeY4Tjt8AG6SExnUj-TaeWiu7hzjxXkZzjKLc9Z9yQbtthQvgozfXjEkgc-e8sipVdhkZQC93FjLHRZIBPUKMDVX2NrmjfVBL3FJvjbW2-x6nozXvTQnT4gU1BhB_eZrQhZ4s6cS_UN-9gS3PQLwJmWjY0JlKCKNk2NY4uhWvBnhpJRb2JaLYa7Dk4sIoLwGpiTPc9kp2X4c9WgBfx0BuViL0ZXv3K37j3VQoUcU3fAAXV9RFovb8SGO6oPIuq5XZL-VUbWcDM4PajXpR0bqiaCgmmhw4c0ZR5QpHgrRMQhotpu6SaY3FmQlM2LRwtPzV0IuNxMEcoQhD_i4yEA25ZSq7a25T2jr0lukyH_S1nsVo_rsEIhdZlDlzHSEw");
+	pp.subscribe("private-user.1", event_handler, auth_handler, "192.168.1.168", 81, "broadcasting/auth", "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6IjFiNDA2ZjY0ZTMwNWM3OTI5ODJmYTgxNTk5YzZmZjlhZGI1MzkwMGYwM2EyM2FjMDE3Y2YxNGMwNGE4MzM1MTM5NDRjYTVkYmJhOWFiMTc4In0.eyJhdWQiOiIxIiwianRpIjoiMWI0MDZmNjRlMzA1Yzc5Mjk4MmZhODE1OTljNmZmOWFkYjUzOTAwZjAzYTIzYWMwMTdjZjE0YzA0YTgzMzUxMzk0NGNhNWRiYmE5YWIxNzgiLCJpYXQiOjE1NjQwNTU0MDgsIm5iZiI6MTU2NDA1NTQwOCwiZXhwIjoxNTk1Njc3ODA4LCJzdWIiOiIxIiwic2NvcGVzIjpbXX0.CTDMrSCqpEVWMCyFNBSyQbE_QSRvh8CDO0aBId11pBNWG9jozM9xCyaC3Bdb4LLp6VOVdi_8DeKx4HMcdSy6gwAV10gMfOOJOyixReSH9FOHYorJApzFcQS5xaWgFbh8v7RzxL68ImouSISkxr5yvCnixYDS9nKvG4hX1Dy7vOqJ7aFqBM7iPtfXvFO6TnSxnIMDPEYGbElaqdZ25vH5ZuWS0hpYr5hWaFcrjTZ8Um1inL_9AbJXO2RYcV-PY72VNPFAfOy1GTJvI-WQVmdiLKmd35dWvCNky5C5sw4baVwgRrWeY4Tjt8AG6SExnUj-TaeWiu7hzjxXkZzjKLc9Z9yQbtthQvgozfXjEkgc-e8sipVdhkZQC93FjLHRZIBPUKMDVX2NrmjfVBL3FJvjbW2-x6nozXvTQnT4gU1BhB_eZrQhZ4s6cS_UN-9gS3PQLwJmWjY0JlKCKNk2NY4uhWvBnhpJRb2JaLYa7Dk4sIoLwGpiTPc9kp2X4c9WgBfx0BuViL0ZXv3K37j3VQoUcU3fAAXV9RFovb8SGO6oPIuq5XZL-VUbWcDM4PajXpR0bqiaCgmmhw4c0ZR5QpHgrRMQhotpu6SaY3FmQlM2LRwtPzV0IuNxMEcoQhD_i4yEA25ZSq7a25T2jr0lukyH_S1nsVo_rsEIhdZlDlzHSEw");
 	pp.join();
 	return WSACleanup();
 }
