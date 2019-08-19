@@ -5,6 +5,10 @@
 #include <unordered_map>
 #include <vector>
 #include <thread>
+#include <iostream>
+#include <Windows.h>
+#include <wininet.h>
+#pragma comment(lib,"wininet")
 
 class pushcpp
 {
@@ -128,7 +132,7 @@ public:
 	 * Will return true if the subscription was sent out immediately (since
 	 * we were connected), false otherwise.
 	 */
-	bool subscribe(
+	virtual bool subscribe(
 		const std::string &channel,
 		/**
 		 * This handler receives all channel events, including
@@ -203,7 +207,7 @@ public:
 		return m_socketId;
 	}
 
-private:
+protected:
 	// Dont allow copying.
 	// No point in opening a second connection, is there?
 	pushcpp(const pushcpp&);
@@ -235,4 +239,10 @@ private:
 	// This includes channels we were rejected from.
 	std::unordered_map<std::string, ChannelData> m_channelData;
 	std::string m_userAgent;
+	static void cn_ev(const pushcpp::ConnectionEvent ev);
+	static void er_ev(const int code, const std::string &msg);
+	static void event_handler(const std::string &channel,
+		const std::string &event,
+		const std::string &data);
+	static pushcpp::ChannelAuthentication auth_handler(const std::string &socketId, const std::string &channel, const std::string &userAgent, const std::string &hostAuthEndpoint, const unsigned int &portAuthEndpoint, const std::string &pathAuthEndpoint, const std::string &token);
 };
