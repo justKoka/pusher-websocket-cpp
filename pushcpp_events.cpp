@@ -36,8 +36,7 @@ void pushcpp::WS_Dispatch(const string & message)
 			sendSubscription(true, it->first);
 		}
 
-		if (m_connectionEventHandler)
-			m_connectionEventHandler(ConnectionEvent::CONNECTED);
+		this->onConnectionEvent(ConnectionEvent::CONNECTED);
 
 		json_decref(json);
 		json_decref(jdata);
@@ -101,13 +100,11 @@ void pushcpp::WS_Dispatch(const string & message)
 	}
 
 	if (event == "pusher:error") {
-		if (m_errorEventHandler) {
-			json_t *jdata = json_object_get(json, "data");
-			int code = json_integer_value(json_object_get(jdata, "code"));
-			string message = json_string_value(json_object_get(jdata, "message"));
+		json_t *jdata = json_object_get(json, "data");
+		int code = json_integer_value(json_object_get(jdata, "code"));
+		string message = json_string_value(json_object_get(jdata, "message"));
 
-			m_errorEventHandler(code, message);
-		}
+		this->onErrorEvent(code, message);
 
 		json_decref(json);
 		return;
@@ -137,12 +134,7 @@ void pushcpp::WS_Dispatch(const string & message)
 		auto it = m_channelData.find(channel);
 
 		if (it != m_channelData.end())
-			for (
-				auto it2 = it->second.eventHandlers.begin();
-				it2 != it->second.eventHandlers.end();
-				it2++
-			)
-				(*it2)(channel, event, data);
+				this->eventHandler(channel, event, data);
 	}
 
 	json_decref(json);

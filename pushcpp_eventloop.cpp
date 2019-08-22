@@ -39,8 +39,7 @@ void pushcpp::EventThread()
 		for (auto it = m_channelData.begin(); it != m_channelData.end(); it++)
 			it->second.clear();
 
-		if (m_connectionEventHandler)
-			m_connectionEventHandler(ConnectionEvent::DISCONNECTED);
+			this->onConnectionEvent(ConnectionEvent::DISCONNECTED);
 
 		if (m_wantDisconnect)
 			break;

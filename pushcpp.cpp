@@ -2,13 +2,9 @@
 
 pushcpp::pushcpp(
 	const string &wsUrl,
-	const string &userAgent,
-	ConnectionEventHandler ch,
-	ErrorEventHandler eh
+	const string &userAgent
 )
 {
-	this->m_connectionEventHandler = ch;
-	this->m_errorEventHandler = eh;
 	this->m_userAgent = userAgent;
 	stringstream str;
 	str << "ws://";
@@ -83,18 +79,18 @@ bool pushcpp::send(
 	return ret;
 }
 
-void pushcpp::cn_ev(const pushcpp::ConnectionEvent ev)
+void pushcpp::onConnectionEvent(const pushcpp::ConnectionEvent ev)
 {
 	printf("ConnectEvent: %d\n", ev);
 }
 
-void pushcpp::er_ev(const int code, const std::string &msg)
+void pushcpp::onErrorEvent(const int code, const std::string &msg)
 {
 	std::cout << "Error from pusher: " << code << " " << msg << std::endl;
 }
 
 
-void pushcpp::event_handler(
+void pushcpp::eventHandler(
 	const string &channel,
 	const string &event,
 	const string &data
@@ -103,13 +99,13 @@ void pushcpp::event_handler(
 	cout << "event: " << event << endl << "on channel: " << channel << endl << "with data: " << data << endl;
 }
 
-pushcpp::ChannelAuthentication pushcpp::auth_handler(const std::string &socketId, const std::string &channel, const std::string &userAgent, const std::string &hostAuthEndpoint, const unsigned int &portAuthEndpoint, const std::string &pathAuthEndpoint, const std::string &token)
+pushcpp::ChannelAuthentication pushcpp::authHandler( const std::string &channel, const std::string &hostAuthEndpoint, const unsigned int &portAuthEndpoint, const std::string &pathAuthEndpoint, const std::string &token)
 {
 	char httpPostResponse[128];
 
 	//setup connection, make request
 
-	HINTERNET hInternet = InternetOpen(userAgent.c_str(), INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, NULL);
+	HINTERNET hInternet = InternetOpen(m_userAgent.c_str(), INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, NULL);
 	if (hInternet != NULL) {
 		HINTERNET hConnect = InternetConnect(hInternet, hostAuthEndpoint.c_str(), portAuthEndpoint, NULL, NULL, INTERNET_SERVICE_HTTP, NULL, NULL);
 		if (hConnect != NULL) {
@@ -121,8 +117,8 @@ pushcpp::ChannelAuthentication pushcpp::auth_handler(const std::string &socketId
 
 				//making post data to send via http (json including socketId and channel)
 
-				unique_ptr<char[]> PostData(new char[44 + socketId.length() + channel.length()]);
-				sprintf(PostData.get(), "{ \"socket_id\": \"%s\", \"channel_name\": \"%s\" }", socketId.c_str(), channel.c_str());
+				unique_ptr<char[]> PostData(new char[44 + m_socketId.length() + channel.length()]);
+				sprintf(PostData.get(), "{ \"socket_id\": \"%s\", \"channel_name\": \"%s\" }", m_socketId.c_str(), channel.c_str());
 				bool res = HttpSendRequest(hRequest, LPCSTR(httpHeaders.get()), strlen(httpHeaders.get()), (LPVOID)PostData.get(), strlen(PostData.get()));
 				//for debugging
 

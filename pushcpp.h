@@ -9,6 +9,7 @@
 #include <Windows.h>
 #include <wininet.h>
 #pragma comment(lib,"wininet")
+#include <functional>
 
 class pushcpp
 {
@@ -17,24 +18,6 @@ public:
 		CONNECTED       = 0,
 		DISCONNECTED    = 1
 	};
-
-	typedef void (*ConnectionEventHandler)(
-		const ConnectionEvent ce
-	);
-
-	typedef void (*ErrorEventHandler)(
-		const int code,
-		const std::string &message
-	);
-
-	typedef void (*ChannelEventHandler)(
-		const std::string &channel,
-		const std::string &event,
-		const std::string &eventData);
-
-	typedef void (*ChannelPresenceHandler)(
-		const std::string &channel
-	);
 
 	/**
 	 * Return this for authentication requests.
@@ -55,20 +38,9 @@ public:
 	 * method call that originates this, or the pusher event thread.
 	 * This might change in the future.
 	 */
-	typedef ChannelAuthentication(*ChannelAuthHandler)(
-		const std::string &socketId,
-		const std::string &channel,
-		const std::string &userAgent,
-		const std::string &hostAuthEndpoint,
-		const unsigned int &portAuthEndpoint,
-		const std::string &pathAuthEndpoint,
-		const std::string &token
-	);
 
 	struct ChannelData {
 		bool subscribed = false;
-		ChannelAuthHandler authHandler;
-		std::set<ChannelEventHandler> eventHandlers;
 		std::set<std::string> presenceMemberIds;
 		std::string token;
 		std::string hostAuthEndpoint;
@@ -89,9 +61,7 @@ public:
 	 */
 	pushcpp(
 		const std::string &wsUrl,
-		const std::string &userAgent,
-		ConnectionEventHandler ch = NULL,
-		ErrorEventHandler eh = NULL
+		const std::string &userAgent
 	);
 
 	/**
@@ -119,36 +89,6 @@ public:
 	 * by blocking on the event loop.
 	 */
 	void join();
-
-	/**
-	 * Subscribe to a channel. The given event handler
-	 * will be called when a channel receives a message.
-	 *
-	 * You can call this at any time, no matter the connection state.
-	 * Channels will be automatically resubscribed to on reconnect.
-	 *
-	 * Repeatedly subscribing to the same channel will do nothing.
-	 *
-	 * Will return true if the subscription was sent out immediately (since
-	 * we were connected), false otherwise.
-	 */
-	virtual bool subscribe(
-		const std::string &channel,
-		/**
-		 * This handler receives all channel events, including
-		 * internal ones, in case you want to act on them.
-		 */
-		ChannelEventHandler event,
-		/**
-		 * This is called for authentication requests as described
-		 * above. presence- and private- channels require this.
-		 */
-		ChannelAuthHandler auth,
-		const std::string &hostAuthEndpoint,
-		const unsigned int &portAuthEndpoint,
-		const std::string &pathAuthEndpoint,
-		const std::string &token
-	);
 
 	/**
 	 * Unsubscribes you from this channel.
@@ -206,6 +146,27 @@ public:
 	{
 		return m_socketId;
 	}
+	
+	/**
+	* Subscribe to a channel. The given event handler
+	* will be called when a channel receives a message.
+	*
+	* You can call this at any time, no matter the connection state.
+	* Channels will be automatically resubscribed to on reconnect.
+	*
+	* Repeatedly subscribing to the same channel will do nothing.
+	*
+	* Will return true if the subscription was sent out immediately (since
+	* we were connected), false otherwise.
+	*/
+
+	virtual bool subscribe(
+		const std::string &channel,
+		const std::string &hostAuthEndpoint,
+		const unsigned int &portAuthEndpoint,
+		const std::string &pathAuthEndpoint,
+		const std::string &token
+	);
 
 protected:
 	// Dont allow copying.
@@ -232,17 +193,14 @@ protected:
 		const std::string &channel
 	);
 
-	ErrorEventHandler m_errorEventHandler;
-	ConnectionEventHandler m_connectionEventHandler;
-
 	// The complete list of channels we (want to) subscribe to.
 	// This includes channels we were rejected from.
 	std::unordered_map<std::string, ChannelData> m_channelData;
 	std::string m_userAgent;
-	static void cn_ev(const pushcpp::ConnectionEvent ev);
-	static void er_ev(const int code, const std::string &msg);
-	static void event_handler(const std::string &channel,
+	virtual void onConnectionEvent(const pushcpp::ConnectionEvent ev);
+	virtual void onErrorEvent(const int code, const std::string &msg);
+	virtual void eventHandler(const std::string &channel,
 		const std::string &event,
 		const std::string &data);
-	static pushcpp::ChannelAuthentication auth_handler(const std::string &socketId, const std::string &channel, const std::string &userAgent, const std::string &hostAuthEndpoint, const unsigned int &portAuthEndpoint, const std::string &pathAuthEndpoint, const std::string &token);
+	virtual pushcpp::ChannelAuthentication authHandler(const std::string &channel, const std::string &hostAuthEndpoint, const unsigned int &portAuthEndpoint, const std::string &pathAuthEndpoint, const std::string &token);
 };

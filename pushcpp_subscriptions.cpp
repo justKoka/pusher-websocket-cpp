@@ -2,8 +2,6 @@
 
 bool pushcpp::subscribe(
 	const string &channel,
-	ChannelEventHandler event,
-	ChannelAuthHandler auth,
 	const std::string &hostAuthEndpoint,
 	const unsigned int &portAuthEndpoint,
 	const std::string &pathAuthEndpoint,
@@ -11,14 +9,6 @@ bool pushcpp::subscribe(
 )
 {
 	ChannelData d = m_channelData[channel];
-
-	if (event != NULL)
-		d.eventHandlers.insert(event);
-
-	if (auth != NULL)
-		d.authHandler = auth;
-	else
-		d.authHandler = NULL;
 
 	d.token = token;
 	d.hostAuthEndpoint = hostAuthEndpoint;
@@ -80,11 +70,11 @@ bool pushcpp::sendSubscription(
 	if (subscribe) {
 		auto chanData = m_channelData.find(channel);
 
-		if (chanData != m_channelData.end() && chanData->second.authHandler != NULL) {
+		if (chanData != m_channelData.end()/* && chanData->second.authHandler != NULL*/) {
 			assert(!this->m_socketId.empty());
 
 			ChannelAuthentication authdata =
-				chanData->second.authHandler(this->m_socketId, channel, this->m_userAgent, chanData->second.hostAuthEndpoint, chanData->second.portAuthEndpoint, chanData->second.pathAuthEndpoint, chanData->second.token);
+				this->authHandler(channel, chanData->second.hostAuthEndpoint, chanData->second.portAuthEndpoint, chanData->second.pathAuthEndpoint, chanData->second.token);
 
 			/*	string chdata = authdata.channelData;
 
